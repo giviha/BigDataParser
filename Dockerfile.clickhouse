@@ -1,0 +1,2 @@
+FROM clickhouse/clickhouse-server:25.8
+COPY sql/01-logs.sql /docker-entrypoint-initdb.d/01-logs.sql

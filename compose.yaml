@@ -1,0 +1,130 @@
+name: bigdata-parser
+x-agent: &agent
+  image: bigdata-parser-agent:local
+  build: {context: ., target: agent}
+  volumes:
+    - logs:/logs:ro
+  depends_on:
+    collector:
+      condition: service_started
+
+x-source: &source
+  profiles: [source]
+  volumes:
+    - logs:/logs
+
+services:
+  clickhouse:
+    image: bigdata-parser-clickhouse:local
+    build: {context: ., dockerfile: Dockerfile.clickhouse}
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: demo-local
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      TZ: UTC
+    volumes:
+      - clickhouse:/var/lib/clickhouse
+    healthcheck:
+      test: [CMD, clickhouse-client, --password, demo-local, --query, "SELECT 1 FROM logs LIMIT 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  collector:
+    image: bigdata-parser-collector:local
+    build: {context: ., target: collector}
+    command: ["-clickhouse", "http://default:demo-local@clickhouse:8123/?wait_end_of_query=1"]
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+  source-alpine:
+    <<: *source
+    build: {context: ., target: source-alpine}
+  source-debian:
+    <<: *source
+    build: {context: ., target: source-debian}
+  source-ubuntu:
+    <<: *source
+    build: {context: ., target: source-ubuntu}
+
+  agent-01:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-01", "-file", "/logs/01.log", "-source", "json"]
+
+  agent-02:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-02", "-file", "/logs/02.log", "-source", "syslog"]
+
+  agent-03:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-03", "-file", "/logs/03.log", "-source", "nginx"]
+
+  agent-04:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-04", "-file", "/logs/04.log", "-source", "json"]
+
+  agent-05:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-05", "-file", "/logs/05.log", "-source", "syslog"]
+
+  agent-06:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-06", "-file", "/logs/06.log", "-source", "nginx"]
+
+  agent-07:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-07", "-file", "/logs/07.log", "-source", "json"]
+
+  agent-08:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-08", "-file", "/logs/08.log", "-source", "syslog"]
+
+  agent-09:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-09", "-file", "/logs/09.log", "-source", "nginx"]
+
+  agent-10:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-10", "-file", "/logs/10.log", "-source", "json"]
+
+  agent-11:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-11", "-file", "/logs/11.log", "-source", "syslog"]
+
+  agent-12:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-12", "-file", "/logs/12.log", "-source", "nginx"]
+
+  agent-13:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-13", "-file", "/logs/13.log", "-source", "json"]
+
+  agent-14:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-14", "-file", "/logs/14.log", "-source", "syslog"]
+
+  agent-15:
+    <<: *agent
+    profiles: [lab]
+    command: ["-name", "agent-15", "-file", "/logs/15.log", "-source", "nginx"]
+
+volumes:
+  logs:
+  clickhouse:

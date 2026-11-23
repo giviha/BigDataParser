@@ -1,0 +1,16 @@
+syntax = "proto3";
+package logs;
+option go_package = "bigdata/api;api";
+
+message LogRecord {
+  string agent = 1;
+  string source = 2;
+  int64 time = 3;
+  string level = 4;
+  string message = 5;
+  string ip = 6;
+  uint32 status = 7;
+}
+message Batch { repeated LogRecord records = 1; }
+message Reply { bool ok = 1; }
+service Collector { rpc Send(Batch) returns (Reply); }
